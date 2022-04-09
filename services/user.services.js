@@ -7,7 +7,9 @@ const key = "secretkey"; // Key for cryptograpy. Keep it secret
 var msg91 = require("msg91")("1", "1", "1");
 
 async function login({ username, password }, callback) {
+  console.log(username)
   const user = await User.findOne({ username });
+  console.log(user)
 
   if (user != null) {
     if (bcrypt.compareSync(password, user.password)) {

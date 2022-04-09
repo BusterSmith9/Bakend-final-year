@@ -83,6 +83,6 @@ app.use((req, res, next) => {
  app.use(errors.errorHandler);
  
  // listen for requests
- app.listen(process.env.port || 4001, function () {
+ app.listen(process.env.port || 3000, function () {
    console.log("Ready to Go!");
  });

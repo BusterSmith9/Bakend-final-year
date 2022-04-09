@@ -36,9 +36,8 @@ const upload = multer({
 
 router.get('/', async (req, res) => {
   let filter = {}
-  if(req.query.categories)
-  {
-    filter = {category: req.query.categories.split(',')}
+  if (req.query.categories) {
+    filter = { category: req.query.categories.split(',') }
   }
   const placeList = await Place.find(filter).populate('category');
 
@@ -49,9 +48,9 @@ router.get('/', async (req, res) => {
 })
 
 
-router.post("/", upload.single('placeImage'), async(req, res, next) => {
+router.post("/", upload.single('placeImage'), async (req, res, next) => {
   const category = await Category.findById(req.body.category);
-  if(!category) return res.status(400).send('Invalid Category')
+  if (!category) return res.status(400).send('Invalid Category')
 
   const place = new Place({
     _id: new mongoose.Types.ObjectId(),
@@ -81,7 +80,7 @@ router.post("/", upload.single('placeImage'), async(req, res, next) => {
           _id: result._id,
           request: {
             type: 'GET',
-            url: "http://localhost:4001/places/" + result._id
+            url: "http://localhost:3000/places/" + result._id
           }
         }
       });
@@ -95,7 +94,9 @@ router.post("/", upload.single('placeImage'), async(req, res, next) => {
 });
 
 router.get('/:id', async (req, res) => {
+  console.log(`params id: ${req.params.id}`)
   const place = await Place.findById(req.params.id).populate('category');
+
 
   if (!place) {
     res.status(400).json({ message: "this place with the given id does not exist" })
@@ -103,11 +104,33 @@ router.get('/:id', async (req, res) => {
   res.status(200).send(place);
 })
 
-router.put('/:id', async (req, res)=> {
+router.get('/category/:id', async (req, res) => {
+  console.log(`params id: ${req.params.id}`)
+  const place = await Place.find({ category: req.params.id }).populate('category');
+
+
+  if (!place) {
+    res.status(400).json({ message: "this place with the given id does not exist" })
+  }
+  res.status(200).send(place);
+})
+
+router.get('/:id', async (req, res) => {
+  console.log(`params id: ${req.params.id}`)
+  const place = await Place.find({ category: req.params.id }).populate('category');
+
+
+  if (!place) {
+    res.status(400).json({ message: "this place with the given id does not exist" })
+  }
+  res.status(200).send(place);
+})
+
+router.put('/:id', async (req, res) => {
   const category = await Category.findById(req.body.category);
-  if(!category) return res.status(400).send('Invalid Category')
+  if (!category) return res.status(400).send('Invalid Category')
   const place = await Place.findByIdAndUpdate(
-    req.params.id, 
+    req.params.id,
     {
       placeName: req.body.placeName,
       placeDescription: req.body.placeDescription,
@@ -117,10 +140,10 @@ router.put('/:id', async (req, res)=> {
       totalLikes: req.body.totalLikes,
       category: req.body.category,
     },
-    {new: true}
+    { new: true }
   )
-  if(!place)
-  return res.status(500).send('the place cannot be updated')
+  if (!place)
+    return res.status(500).send('the place cannot be updated')
 
   res.send(place);
 })
@@ -151,7 +174,7 @@ router.get(`/get/count`, async (req, res) => {
 
 router.get(`/get/recentlyAdded/:count`, async (req, res) => {
   const count = req.params.count ? req.params.count : 0
-  const places = await Place.find({recentlyAdded: true}).limit(+count);
+  const places = await Place.find({ recentlyAdded: true }).limit(+count);
 
   if (![places]) {
     res.status(400).json({ success: false })
