@@ -7,7 +7,7 @@ const Place = require("../models/places.model");
 
 
 router.get('/', async (req, res) => {
-  const reviewList = await Review.find().populate('place');
+  const reviewList = await Review.find().populate('user').populate('place');
 
   if (!reviewList) {
     res.status(400).json({ success: false })
@@ -25,7 +25,6 @@ router.post("/", async(req, res, next) => {
   const review = new Review({
     _id: new mongoose.Types.ObjectId(),
     review: req.body.review,
-    rating: req.body.rating,
     user: req.body.user,
     place: req.body.place,
   });
@@ -37,7 +36,6 @@ router.post("/", async(req, res, next) => {
         message: "Created review successfully",
         createdReview: {
           review: result.review,
-          rating: result.rating,
           user: result.user,
           place: result.place,
           _id: result._id,
@@ -57,7 +55,7 @@ router.post("/", async(req, res, next) => {
 });
 
 router.get('/:id', async (req, res) => {
-  const review = await Review.findById(req.params.id).populate('place');
+  const review = await Review.findById(req.params.id).populate('user').populate('place');
 
   if (!review) {
     res.status(400).json({ message: "this place with the given id does not exist" })
@@ -70,7 +68,6 @@ router.put('/:id', async (req,res, next) => {
     req.params.id,
     {
       review:req.body.review,
-      rating:req.body.rating, 
     }
   )
   if (!review)
