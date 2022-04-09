@@ -10,6 +10,7 @@ const categoryRoutes = require("./routes/categories.routes");
 const placeRoutes = require("./routes/places.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/reviews.routes");
+const blogRoutes = require("./routes/blog.routes");
 
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
@@ -79,6 +80,7 @@ app.use((req, res, next) => {
  app.use("/places", placeRoutes);
  app.use("/booking", bookingRoutes);
  app.use("/reviews", reviewRoutes);
+ app.use("/blog", blogRoutes);
 // middleware for error responses
  app.use(errors.errorHandler);
  

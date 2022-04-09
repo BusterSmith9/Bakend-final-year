@@ -79,6 +79,18 @@ router.put('/:id', async (req,res, next) => {
   res.send(review);
   
 });
+router.delete('/:id', (req, res) => {
+  Review.findByIdAndRemove(req.params.id).then(review => {
+      if (review) {
+          return res.status(200).json({ success: true, message: 'the review is deleted' })
+      } else {
+          return res.status(400).json({ success: false, message: 'review cannot be found' })
+      }
+
+  }).catch(err => {
+      return res.status(400), json({ success: false, error: err })
+  })
+});
 
 
 

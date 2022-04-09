@@ -83,15 +83,16 @@ router.get('/:id', async (req, res) => {
 });
 
 router.put('/:id', async (req,res, next) => {
-  const category= await Category.findByIdAndUpdate(
-    req.params.id,
-    {
-      name:req.body.name,
-      description:req.body.description, 
+
+    const category= await Category.findById(req.params.id);
+
+    if (!category){
+      return res.status(400).send('invalid');
+  
     }
-  )
-  if (!category)
-  return res.status(400).send('invalid')
+
+    category.name=req.body.name;
+    category.description=req.body.description;
 
   res.send(category);
   
