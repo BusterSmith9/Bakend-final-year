@@ -7,7 +7,7 @@ const Place = require("../models/places.model");
 
 
 router.get('/', async (req, res) => {
-    const blogList = await Blog.find().populate('place');
+    const blogList = await Blog.find().populate('place').populate('user');
 
     if (!blogList) {
         res.status(400).json({ success: false })
@@ -57,7 +57,7 @@ router.post("/", async (req, res, next) => {
 });
 
 router.get('/:id', async (req, res) => {
-    const blog = await Blog.findById(req.params.id).populate('place');
+    const blog = await Blog.findById(req.params.id).populate('place').populate('user');
   
     if (!blog) {
       res.status(400).json({ message: "this blog with the given id does not exist" })
