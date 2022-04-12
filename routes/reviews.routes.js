@@ -7,7 +7,10 @@ const Place = require("../models/places.model");
 
 
 router.get('/', async (req, res) => {
-  const reviewList = await Review.find().populate('user').populate('place');
+  const reviewList = await Review.find().populate('user').populate({
+    path: 'place',
+    populate: { path: 'category' }
+  }).sort({ _id: 1, });
 
   if (!reviewList) {
     res.status(400).json({ success: false })
@@ -16,11 +19,11 @@ router.get('/', async (req, res) => {
 })
 
 
-router.post("/", async(req, res, next) => {
+router.post("/", async (req, res, next) => {
   const user = await User.findById(req.body.user);
-  if(!user) return res.status(400).send('Invalid user')
+  if (!user) return res.status(400).send('Invalid user')
   const place = await Place.findById(req.body.place);
-  if(!place) return res.status(400).send('Invalid place name')
+  if (!place) return res.status(400).send('Invalid place name')
 
   const review = new Review({
     _id: new mongoose.Types.ObjectId(),
@@ -63,29 +66,29 @@ router.get('/:id', async (req, res) => {
   res.status(200).send(review);
 });
 
-router.put('/:id', async (req,res, next) => {
-  const review= await Review.findByIdAndUpdate(
+router.put('/:id', async (req, res, next) => {
+  const review = await Review.findByIdAndUpdate(
     req.params.id,
     {
-      review:req.body.review,
+      review: req.body.review,
     }
   )
   if (!review)
-  return res.status(400).send('invalid')
+    return res.status(400).send('invalid')
 
   res.send(review);
-  
+
 });
 router.delete('/:id', (req, res) => {
   Review.findByIdAndRemove(req.params.id).then(review => {
-      if (review) {
-          return res.status(200).json({ success: true, message: 'the review is deleted' })
-      } else {
-          return res.status(400).json({ success: false, message: 'review cannot be found' })
-      }
+    if (review) {
+      return res.status(200).json({ success: true, message: 'the review is deleted' })
+    } else {
+      return res.status(400).json({ success: false, message: 'review cannot be found' })
+    }
 
   }).catch(err => {
-      return res.status(400), json({ success: false, error: err })
+    return res.status(400), json({ success: false, error: err })
   })
 });
 

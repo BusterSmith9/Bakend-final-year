@@ -7,7 +7,7 @@ const Place = require("../models/places.model");
 
 
 router.get('/', async (req, res) => {
-    const blogList = await Blog.find().populate('place').populate('user');
+    const blogList = await Blog.find().populate({ path: 'place', populate: { path: 'category' } }).populate('user');
 
     if (!blogList) {
         res.status(400).json({ success: false })
@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
 
 router.post("/", async (req, res, next) => {
     const user = await User.findById(req.body.user);
+    console.log(req.body);
     if (!user) return res.status(400).send('Invalid user')
     const place = await Place.findById(req.body.place);
     if (!place) return res.status(400).send('Invalid place name')
@@ -57,13 +58,19 @@ router.post("/", async (req, res, next) => {
 });
 
 router.get('/:id', async (req, res) => {
-    const blog = await Blog.findById(req.params.id).populate('place').populate('user');
-  
+
+    const id = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(500).json({ success: false, message: 'Invalid blog id' })
+    }
+    const blog = await Blog.findById(req.params.id).populate({ path: 'place', populate: { path: 'category' } }).populate('user');
+
     if (!blog) {
-      res.status(400).json({ message: "this blog with the given id does not exist" })
+        res.status(400).json({ message: "this blog with the given id does not exist" })
     }
     res.status(200).send(blog);
-  });
+});
 
 router.delete('/:id', (req, res) => {
     Blog.findByIdAndRemove(req.params.id).then(blog => {
