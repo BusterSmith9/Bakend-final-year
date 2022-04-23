@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const userServices = require("../services/user.services");
+const User = require('../models/user.model')
 
 /**
  * 1. To secure the password, we are using the bcryptjs, It stores the hashed password in the database.
@@ -24,10 +25,53 @@ exports.register = (req, res, next) => {
   });
 };
 
+exports.users = async (req, res, next) => {
+  const usersList = await User.find({role: 1});
+  if (!usersList) {
+    res.status(400).send('No users registered')
+    return;
+  }
+  res.status(200).send(usersList);
+
+}
+
 exports.login = (req, res, next) => {
   const { username, password } = req.body;
 
-  userServices.login({ username, password }, (error, results) => {
+  console.log(`username: ${username} password: ${password}`)
+  userServices.login({ username, password, role: 1 }, (error, results) => {
+    if (error) {
+      return next(error);
+    }
+    return res.status(200).send({
+      message: "Success",
+      data: results,
+    });
+  });
+};
+
+exports.totalCount = async (req, res, next) => {
+
+  const count = await User.countDocuments({role: 1});
+  console.log(`count: ${count}`)
+
+  if(count == 0)
+  {
+      res.status(200).send({'message': 'No Blogs Found'});
+      return;
+  }
+
+  if (!count) {
+    res.status(400).json({ success: false })
+  }
+  res.status(200).send({ 'count': count });
+
+}
+
+exports.adminLogin = (req, res, next) => {
+  const { username, password } = req.body;
+
+  userServices.login({ username, password, role: 0 }, (error, results) => {
     if (error) {
       return next(error);
     }

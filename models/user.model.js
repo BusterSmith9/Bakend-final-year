@@ -8,6 +8,11 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
+  role: {
+    type: Number,
+    required: true,
+    default: 1,
+  },
   email: {
     type: String,
     required: true,

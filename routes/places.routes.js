@@ -5,6 +5,7 @@ const multer = require('multer');
 const Place = require("../models/places.model");
 const Category = require("../models/categories.model");
 const { count } = require("../models/categories.model");
+const Notification = require("../models/notification.model")
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -29,7 +30,7 @@ const upload = multer({
   limits: {
     fileSize: 1024 * 1024 * 5
   },
-  fileFilter: fileFilter
+
 });
 
 
@@ -47,10 +48,30 @@ router.get('/', async (req, res) => {
   res.status(200).send(placeList);
 })
 
+router.get('/totalCount', async (req, res) => {
+  const count = await Place.countDocuments({});
+  console.log(`count: ${count}`)
+
+  if (count == 0) {
+    res.status(200).send({ 'message': 'No Blogs Found' });
+    return;
+  }
+
+  if (!count) {
+    res.status(400).json({ success: false })
+  }
+  res.status(200).send({ 'count': count });
+})
+
 
 router.post("/", upload.single('placeImage'), async (req, res, next) => {
   const category = await Category.findById(req.body.category);
   if (!category) return res.status(400).send('Invalid Category')
+  if (!req.file) {
+    return res.status(500).json({
+      error: 'No file found'
+    });
+  }
 
   const place = new Place({
     _id: new mongoose.Types.ObjectId(),
@@ -63,6 +84,11 @@ router.post("/", upload.single('placeImage'), async (req, res, next) => {
     totalLikes: req.body.totalLikes,
     category: req.body.category,
   });
+  const notification = new Notification({
+    _id: new mongoose.Types.ObjectId(),
+    message: `Added Place ${req.body.placeName}`,
+  });
+  await notification.save();
   place
     .save()
     .then(result => {
@@ -127,18 +153,10 @@ router.get('/:id', async (req, res) => {
 })
 
 router.put('/:id', async (req, res) => {
-  const category = await Category.findById(req.body.category);
-  if (!category) return res.status(400).send('Invalid Category')
   const place = await Place.findByIdAndUpdate(
     req.params.id,
     {
-      placeName: req.body.placeName,
-      placeDescription: req.body.placeDescription,
-      placeImage: req.file.path,
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
-      totalLikes: req.body.totalLikes,
-      category: req.body.category,
+      ...req.body
     },
     { new: true }
   )

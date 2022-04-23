@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const multer = require('multer');
 const Category = require("../models/categories.model");
+const Notification = require("../models/notification.model");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -27,7 +28,7 @@ const upload = multer({
   limits: {
     fileSize: 1024 * 1024 * 5
   },
-  fileFilter: fileFilter
+
 });
 
 
@@ -40,14 +41,43 @@ router.get('/', async (req, res) => {
   res.status(200).send(categoryList);
 })
 
+router.get('/totalCount', async (req, res) => {
+  const count = await Category.countDocuments({});
+  console.log(`count: ${count}`)
 
-router.post("/", upload.single('categoryImage'), (req, res, next) => {
+  if(count == 0)
+  {
+      res.status(200).send({'message': 'No Blogs Found'});
+      return;
+  }
+
+  if (!count) {
+    res.status(400).json({ success: false })
+  }
+  res.status(200).send({ 'count': count });
+})
+
+
+router.post("/", upload.single('categoryImage'), async (req, res, next) => {
+  console.log(`filepath: ${req.file}`)
+  console.log(`filepath: ${req.files}`)
+  console.log(req.body)
+  if (!req.file) {
+    return res.status(500).json({
+      error: 'No file found'
+    });
+  }
   const category = new Category({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
     description: req.body.description,
     categoryImage: req.file.path
   });
+  const notification = new Notification({
+    _id: new mongoose.Types.ObjectId(),
+    message: `Added category ${req.body.name}`,
+  });
+  await notification.save();
   category
     .save()
     .then(result => {
@@ -60,7 +90,7 @@ router.post("/", upload.single('categoryImage'), (req, res, next) => {
           _id: result._id,
           request: {
             type: 'GET',
-            url: "http://localhost:4001/categories/" + result._id
+            url: "http://localhost:3000/categories/" + result._id
           }
         }
       });
@@ -82,20 +112,22 @@ router.get('/:id', async (req, res) => {
   res.status(200).send(category);
 });
 
-router.put('/:id', async (req,res, next) => {
+router.put('/:id', async (req, res, next) => {
 
-    const category= await Category.findById(req.params.id);
+  const category = await Category.findById(req.params.id);
+  console.log(`body: ${req.body}`)
 
-    if (!category){
-      return res.status(400).send('invalid');
-  
-    }
+  if (!category) {
+    return res.status(400).send('invalid');
 
-    category.name=req.body.name;
-    category.description=req.body.description;
+  }
 
-  res.send(category);
-  
+  category.name = req.body.name;
+  category.description = req.body.description;
+  await category.save();
+
+  res.status(200).send(category);
+
 });
 
 router.delete('/:id', (req, res) => {

@@ -11,6 +11,7 @@ const placeRoutes = require("./routes/places.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/reviews.routes");
 const blogRoutes = require("./routes/blog.routes");
+const notificationRoutes = require("./routes/notification.routes");
 
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
@@ -28,25 +29,25 @@ const bodyParser = require("body-parser");
  * With useUnifiedTopology, the MongoDB driver sends a heartbeat every heartbeatFrequencyMS to check on the status of the connection. 
  * A heartbeat is subject to serverSelectionTimeoutMS , so the MongoDB driver will retry failed heartbeats for up to 30 seconds by default.
  */
- mongoose.Promise = global.Promise;
- mongoose.connect(dbConfig.db, {
-     useNewUrlParser: true,
-     useUnifiedTopology: true,
-   })
-   .then(
-     () => {
-       console.log("Database connected");
-     },
-     (error) => {
-       console.log("Database can't be connected: " + error);
-     }
-   );
+mongoose.Promise = global.Promise;
+mongoose.connect(dbConfig.db, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(
+    () => {
+      console.log("Database connected");
+    },
+    (error) => {
+      console.log("Database can't be connected: " + error);
+    }
+  );
 
-   
+
 app.use(morgan("dev"));
 app.use('/uploads', express.static('uploads'));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
+app.use(bodyParser.json({ extended: false, limit: '50mb' }));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -60,31 +61,32 @@ app.use((req, res, next) => {
   }
   next();
 });
- 
 
- // middleware for authenticating token submitted with requests
- /**
-  * Conditionally skip a middleware when a condition is met.
-  */
 
- 
+// middleware for authenticating token submitted with requests
+/**
+ * Conditionally skip a middleware when a condition is met.
+ */
 
- app.use(express.json());
- 
- app.use(cors());
- app.options('*', cors())
 
- // initialize routes
- app.use("/users", require("./routes/user.routes"));
- app.use("/categories", categoryRoutes);
- app.use("/places", placeRoutes);
- app.use("/booking", bookingRoutes);
- app.use("/reviews", reviewRoutes);
- app.use("/blog", blogRoutes);
+
+app.use(express.json());
+
+app.use(cors());
+app.options('*', cors())
+
+// initialize routes
+app.use("/users", require("./routes/user.routes"));
+app.use("/categories", categoryRoutes);
+app.use("/places", placeRoutes);
+app.use("/booking", bookingRoutes);
+app.use("/reviews", reviewRoutes);
+app.use("/blog", blogRoutes);
+app.use("/notification", notificationRoutes);
 // middleware for error responses
- app.use(errors.errorHandler);
- 
- // listen for requests
- app.listen(process.env.port || 3000, function () {
-   console.log("Ready to Go!");
- });
+app.use(errors.errorHandler);
+
+// listen for requests
+app.listen(process.env.port || 3000, function () {
+  console.log("Ready to Go!");
+});

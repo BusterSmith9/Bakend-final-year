@@ -35,7 +35,7 @@ const upload = multer({
 
 
 router.get('/', async (req, res) => {
-  const bookingList = await Booking.find().populate('user');
+  const bookingList = await Booking.find().populate();
 
   if (!bookingList) {
     res.status(400).json({ success: false })

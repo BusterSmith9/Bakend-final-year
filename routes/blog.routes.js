@@ -15,6 +15,23 @@ router.get('/', async (req, res) => {
     res.status(200).send(blogList);
 })
 
+router.get('/totalCount', async (req, res) => {
+    const count = await Blog.countDocuments({});
+    console.log(`count: ${count}`)
+
+    if(count == 0)
+    {
+        res.status(200).send({'message': 'No Blogs Found'});
+        return;
+    }
+  
+    if (!count) {
+      res.status(400).json({ success: false }).send('No Blogs found')
+    }
+    res.status(200).send({ 'count': count });
+  })
+
+
 
 router.post("/", async (req, res, next) => {
     const user = await User.findById(req.body.user);
@@ -71,6 +88,23 @@ router.get('/:id', async (req, res) => {
     }
     res.status(200).send(blog);
 });
+
+router.put('/:id', async (req, res) => {
+    console.log(req.body)
+    const blog = await Blog.findByIdAndUpdate(
+        req.params.id,
+        {
+            ...req.body
+        },
+
+    )
+    console.log(blog)
+    if (!blog)
+        return res.status(500).send('the blog cannot be updated')
+    const newBlog = await Blog.findById(req.params.id)
+
+    res.send(newBlog);
+})
 
 router.delete('/:id', (req, res) => {
     Blog.findByIdAndRemove(req.params.id).then(blog => {

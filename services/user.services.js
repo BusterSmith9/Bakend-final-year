@@ -6,9 +6,9 @@ const crypto = require("crypto");
 const key = "secretkey"; // Key for cryptograpy. Keep it secret
 var msg91 = require("msg91")("1", "1", "1");
 
-async function login({ username, password }, callback) {
+async function login({ username, password, role }, callback) {
   console.log(username)
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username, role });
   console.log(user)
 
   if (user != null) {
@@ -44,21 +44,21 @@ async function register(params, callback) {
     .catch((error) => {
       return callback(error);
     });
-} 
+}
 
 async function createOtp(params, callback) {
   // Generate a 4 digit numeric OTP
   const otp = otpGenerator.generate(4, {
-      upperCaseAlphabets: false,
-      lowerCaseAlphabets: false,
-      specialChars: false,
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false,
   });
   const ttl = 5 * 60 * 1000; //5 Minutes in miliseconds
   const expires = Date.now() + ttl; //timestamp to 5 minutes in the future
   const data = `${params.phone}.${otp}.${expires}`; // phone.otp.expiry_timestamp
   const hash = crypto.createHmac("sha256", key).update(data).digest("hex"); // creating SHA256 hash of the data
-  const fullHash = `${hash}.${expires}`; 
-  
+  const fullHash = `${hash}.${expires}`;
+
   // Hash.expires, format to send to the user
   // you have to implement the function to send SMS yourself. For demo purpose. let's assume it's called sendSMS
   //sendSMS(phone, `Your OTP is ${otp}. it will expire in 5 minutes`);
@@ -73,6 +73,9 @@ async function createOtp(params, callback) {
 
   return callback(null, fullHash);
 }
+
+
+
 
 async function verifyOTP(params, callback) {
   // Separate Hash value and expires from the hash returned from the user
